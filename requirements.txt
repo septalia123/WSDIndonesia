@@ -5,3 +5,4 @@ streamlit
 kbbi
 pip==21.2.4
 Sastrawi==1.0.1
+stopWords
