@@ -3,8 +3,8 @@ from kbbi import AutentikasiKBBI
 from kbbi import KBBI
 import streamlit as st
 import nltk
-import re
 nltk.download('stopwords')
+import re
 from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from nltk.tokenize import sent_tokenize
