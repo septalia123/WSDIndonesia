@@ -1,11 +1,10 @@
-install nltk
-nltk.download('stopwords')
 from kbbi import TidakDitemukan
 from kbbi import AutentikasiKBBI
 from kbbi import KBBI
 import streamlit as st
 import nltk
 import re
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from nltk.tokenize import sent_tokenize
