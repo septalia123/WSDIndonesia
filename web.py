@@ -3,17 +3,17 @@ from kbbi import AutentikasiKBBI
 from kbbi import KBBI
 import streamlit as st
 import nltk
-nltk.download('stopwords')
-from nltk.corpus import stopwords
+import re
+#from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize import word_tokenize
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
-stopWords = stopwords.words('Indonesian')
+#stopWords = stopwords.words('Indonesian')
 
 # ===================================================================== KBBI =============================================
-auth = AutentikasiKBBI("septaliaputri77@gmail.com", "septalia123")
+auth = AutentikasiKBBI("ll7lililia@gmail.com", "qwerty123")
 
 # ====================================================================== TITTLE===========================================
 st.title("Sistem Word Sense Disambiguation Bahasa Indonesia")
@@ -31,27 +31,27 @@ def preproces(kalimat):
     tokenisasi = word_tokenize(lower)
 
     # proses Stopword Removal
-    stopWords.remove('asal')
-    stopWords.remove('atas')
-    stopWords.remove('besar')
-    stopWords.remove('dini')
-    stopWords.remove('diri')
-    stopWords.remove('dua')
-    stopWords.remove('empat')
-    stopWords.remove('luar')
-    stopWords.remove('masih')
-    stopWords.remove('naik')
-    stopWords.remove('panjang')
-    stopWords.remove('semata')
-    stopWords.remove('waktu')
-    stopWords.remove('tahun')
-    stopWordsd = set(stopWords)
-    word_tokens_no_stopwords = [w for w in tokenisasi if not w in stopWordsd]
+    #stopWords.remove('asal')
+    #stopWords.remove('atas')
+    #stopWords.remove('besar')
+    #stopWords.remove('dini')
+    #stopWords.remove('diri')
+    #stopWords.remove('dua')
+    #stopWords.remove('empat')
+    #stopWords.remove('luar')
+    #stopWords.remove('masih')
+    #stopWords.remove('naik')
+    #stopWords.remove('panjang')
+    #stopWords.remove('semata')
+    #stopWords.remove('waktu')
+    #stopWords.remove('tahun')
+    #stopWordsd = set(stopWords)
+    #word_tokens_no_stopwords = [w for w in tokenisasi if not w in stopWordsd]
 
     # menghapus karakter dan menggantinya dengan spasi/karakter kosong
     special_char = "+=`@_!#$%^&*()<>?/\|}{~:;.[],1234567890‘’'" + '"“”●'
     cleaning = [''.join(x for x in string if not x in special_char)
-                for string in word_tokens_no_stopwords]
+                for string in tokenisasi]
     while '' in cleaning:
         cleaning.remove('')
     return cleaning
@@ -96,40 +96,6 @@ def NewKata(kata):
 new_unigram = NewKata(unigram)
 new_bigram = NewKata(bigram)
 new_trigram = NewKata(trigram)
-
-# ====================================================================== MENGAMBIL MAKNA KATA ===============================
-
-
-def makna(kata):
-    makna = []
-    for nkata in kata:
-        makna_kata = []
-        cari = KBBI(nkata, auth)
-        dmakna = cari.__str__(contoh=True, terkait=False, fitur_pengguna=False)
-
-        # proses memberi index tiap makna dan menghapus makna pertama
-        stc = sent_tokenize(dmakna)
-        if len(stc) > 1:
-            del stc[0]
-        for u in range(len(stc)):
-            # mengubah -- menjadi kata yang dicari
-            if '--' in stc[u]:
-                stc[u] = stc[u].replace('--', nkata)
-
-            # menghapus tanda baca, angka, dan space pada makna
-            del_angka_makna = re.sub(r"\d+", '', stc[u])
-            if "\n" in del_angka_makna:
-                del_angka_makna = del_angka_makna.replace('\n' and '\nn', " ")
-                del_angka_makna = del_angka_makna.replace('.', " ")
-            del_spc_makna = del_angka_makna.strip()
-            makna_kata.append(del_spc_makna)
-        makna.append(makna_kata)
-    return makna
-
-
-makna_unigram = makna(new_unigram)
-makna_bigram = makna(new_bigram)
-makna_trigram = makna(new_trigram)
 
 # ====================================================================== SELEKSI DATA N-GRAM ===============================
 
@@ -204,30 +170,51 @@ def skata(dkata):
     return seleksi
 
 
-seleksi_kata = skata(new_unigram)
+seleksi_kata = skata(new_trigram)
 
-# ====================================================================== SELEKSI MAKNA DATA N-GRAM ===============================
-
-
-def smakna(dmakna):
-    seleksi_makna = []
-    for j in seleksi_kata:
-        if j in new_unigram:
-            idx = new_unigram.index(j)
-            makna = makna_unigram[idx]
-            seleksi_makna.append(makna)
-        if j in new_bigram:
-            idx = new_bigram.index(j)
-            makna = makna_bigram[idx]
-            seleksi_makna.append(makna)
-        if j in new_trigram:
-            idx = new_trigram.index(j)
-            makna = makna_trigram[idx]
-            seleksi_makna.append(makna)
-    return seleksi_makna
+# ====================================================================== MENGAMBIL MAKNA KATA ===============================
 
 
-seleksi_makna = smakna(seleksi_kata)
+def makna(kata):
+    makna = []
+    for nkata in kata:
+        makna_kata = []
+        cari = KBBI(nkata, auth)
+        dmakna = cari.__str__(contoh=True, terkait=False, fitur_pengguna=False)
+
+        #proses memberi index tiap makna dan menghapus makna pertama
+        split_makna1 = dmakna.split('\n\n')
+        stc = []
+        if len(split_makna1)==1:
+            split_makna2 = split_makna1[0].split('\n')
+            for i in range(len(split_makna2)):
+                if i!=0 and 'bentuk tidak baku' not in split_makna2[i]:
+                    stc.append(split_makna2[i])
+        else:
+            for i in split_makna1:
+                split_makna2 = i.split('\n')
+                for k in range(len(split_makna2)):
+                    if k != 0 and 'bentuk tidak baku' not in split_makna2[k]:
+                        stc.append(split_makna2[k])
+        
+        #mengubah tanda menjadi kata
+        for u in range (len(stc)):
+            #mengubah -- menjadi kata yang dicari
+            if '--' in stc[u]:
+                stc[u] = stc[u].replace('--', nkata) 
+            elif '~' in stc[u]:
+                stc[u] = stc[u].replace('~', nkata) 
+                    
+            #menghapus tanda baca, angka, dan space pada makna
+            del_angka_makna = re.sub(r"\d+", '', stc[u])
+            del_tdb_makna = del_angka_makna.replace('.', " ")
+            del_spc_makna = del_tdb_makna.strip()
+            makna_kata.append(del_spc_makna)
+        makna.append(makna_kata)
+    return makna
+
+
+maknakata = makna(seleksi_kata)
 
 # ====================================================================== MENGHITUNG SKOR LESK ===============================
 
@@ -236,12 +223,12 @@ def skor(seleksi_kata):
     count = 0
     skor_makna = []
     while count != len(seleksi_kata):
-        if len(seleksi_makna[count]) == 1:
+        if len(maknakata[count]) == 1:
             skor_makna.append("OK")
         else:
             skor_makna_kata = []
-            for i in range(len(seleksi_makna[count])):
-                setmakna = set(word_tokenize(seleksi_makna[count][i]))
+            for i in range(len(maknakata[count])):
+                setmakna = set(word_tokenize(maknakata[count][i]))
                 setkalimat = set(word_tokenize(kalimat.lower()))
                 irisan = setmakna & setkalimat
                 skor_makna_kata.append(len(irisan))
@@ -262,9 +249,9 @@ def SimplifiedLesk(skor_makna):
         if skor_makna[count2] != "OK":
             lmax = max(skor_makna[count2])
             idx = skor_makna[count2].index(lmax)
-            makna_pilihan.append(seleksi_makna[count2][idx])
+            makna_pilihan.append(maknakata[count2][idx])
         else:
-            makna_pilihan.append(seleksi_makna[count2][0])
+            makna_pilihan.append(maknakata[count2][0])
         count2 += 1
     return makna_pilihan
 
@@ -274,17 +261,15 @@ hasil = SimplifiedLesk(skor_makna)
 
 # ===================================================================== Menampilkan Hasil ==================================
 if proses:
-    c3 = 0
-    while c3 != len(seleksi_kata):
-        st.warning(f"Kata : {seleksi_kata[c3]}")
-        if len(seleksi_makna[c3]) == 1:
-            st.write(seleksi_makna[c3][0])
+    for kata in range(len(seleksi_kata)):
+        st.warning(f"Kata : {seleksi_kata[kata]}")
+        if skor_makna[kata] == 'OK':
+            st.write(maknakata[kata][0])
         else:
-            for i in range(len(seleksi_makna[c3])):
-                if seleksi_makna[c3][i] == hasil[c3]:
+            for i in range(len(skor_makna[kata])):
+                if maknakata[kata][i] == hasil[kata]:
                     st.success(
-                        f"{i+1}. {hasil[c3]} (Skor Makna : {skor_makna[c3][i]})")
+                        f"{i+1}. {maknakata[kata][i]} (Skor Makna : {skor_makna[kata][i]})")
                 else:
                     st.write(
-                        i+1,".", seleksi_makna[c3][i], "(Skor Makna : ", skor_makna[c3][i], ")")
-        c3 += 1
+                        i+1,".", maknakata[kata][i], "(Skor Makna : ", skor_makna[kata][i], ")")
