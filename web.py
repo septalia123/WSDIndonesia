@@ -13,7 +13,7 @@ stemmer = factory.create_stemmer()
 #stopWords = stopwords.words('Indonesian')
 
 # ===================================================================== KBBI =============================================
-auth = AutentikasiKBBI(" liaseptaliaa@gmail.com", "lialia123")
+auth = AutentikasiKBBI("liaseptaliaa@gmail.com", "lialia123")
 
 # ====================================================================== TITTLE===========================================
 st.title("Sistem Word Sense Disambiguation Bahasa Indonesia")
